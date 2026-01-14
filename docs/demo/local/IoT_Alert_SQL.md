@@ -2,6 +2,12 @@
 
 0. Disable WSS Agent!!!!
 
+Start Ollama
+
+```shell
+ollama serve
+```
+
 1. Start Rabbit
 
 ```shell
