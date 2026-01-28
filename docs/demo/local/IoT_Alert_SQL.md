@@ -248,7 +248,7 @@ Start AI Processor Application
 
 
 ```shell
-java -jar applications/alert-ai-processor/target/alert-ai-processor-0.0.1-SNAPSHOT.jar --stream.activity.filter.value=josiah -spring.profiles.active=iot
+java -jar applications/alert-ai-processor/target/alert-ai-processor-0.0.1-SNAPSHOT.jar --stream.activity.filter.value=josiah --spring.profiles.active=iot
 ```
 
 ```shell
@@ -353,7 +353,18 @@ No new alerts
 
 -----------------------
 
-SCDF 
+# SCDF 
+
+Register Applications
+
+```shell
+echo source.iot-source=file://$PWD/applications/http-source/target/http-source-0.0.1-SNAPSHOT.jar
+echo source.iot-source.bootVersion=3
+echo processor.alert-ai-processor=file://$PWD/applications/alert-ai-processor/target/alert-ai-processor-0.0.1-SNAPSHOT.jar
+echo processor.alert-ai-processor.bootVersion=3
+echo sink.alert-app=file://$PWD/applications/alert-app/target/alert-app-0.0.1-SNAPSHOT.jar
+echo sink.alert-app.bootVersion=3
+```
 
 
 ```shell
