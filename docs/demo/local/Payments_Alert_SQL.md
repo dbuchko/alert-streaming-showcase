@@ -9,6 +9,11 @@ Start Ollama
 ollama serve
 ```
 
+Start podman
+```shell
+podman machine init
+podman machine start
+```
 
 1. Start Rabbit
 
@@ -20,6 +25,7 @@ ollama serve
 
 ```shell
 java -jar applications/http-source/target/http-source-0.0.1-SNAPSHOT.jar \
+  --server.port=8383 \
   --mqtt.connectionUrl=tcp://localhost:1883 \
   --spring.application.name=http-mqtt-source \
   --mqtt.userName=guest \
@@ -29,7 +35,7 @@ java -jar applications/http-source/target/http-source-0.0.1-SNAPSHOT.jar \
 3. Start Alarm app for all imani alerts
 
 ```shell
-java -jar applications/alert-app/target/alert-app-0.0.1-SNAPSHOT.jar --spring.rabbitmq.host=localhost --spring.rabbitmq.username=guest --spring.rabbitmq.password=guest --spring.cloud.stream.bindings.input.destination="amq.topic" --stream.destination="alerts.alert" --stream.exchange.bind.key="#"   --stream.filter.sql="account = 'imani' AND level IN ('critical', 'high','medium','low')" --server.port=8080 --stream.activity.filter.name="account" --stream.activity.filter.value="imani" --alert.refresh.rateSeconds=1
+java -jar applications/alert-app/target/alert-app-0.0.1-SNAPSHOT.jar --spring.application.name=alert-app --spring.rabbitmq.host=localhost --spring.rabbitmq.username=guest --spring.rabbitmq.password=guest --spring.cloud.stream.bindings.input.destination="amq.topic" --stream.destination="alerts.alert" --stream.exchange.bind.key="#"   --stream.filter.sql="account = 'imani' AND level IN ('critical', 'high','medium','low')" --server.port=8080 --stream.activity.filter.name="account" --stream.activity.filter.value="imani" --alert.refresh.rateSeconds=1
 ```
 
 
@@ -107,7 +113,7 @@ curl -X 'POST' \
 8. Open Imani for All alerts
 
 ```shell
-open http:///localhost:8080
+open http:///localhost:8383
 ```
 
 
@@ -291,7 +297,7 @@ Start Josiah Alert App
 
 
 ```shell
-java -jar applications/alert-app/target/alert-app-0.0.1-SNAPSHOT.jar --spring.rabbitmq.host=localhost --spring.rabbitmq.username=guest --spring.rabbitmq.password=guest --spring.cloud.stream.bindings.input.destination="amq.topic" --stream.destination="alerts.alert" --stream.exchange.bind.key="#"   --stream.filter.sql="account = 'josiah' AND level IN ('critical', 'high','medium','low')" --server.port=8777 --stream.activity.filter.name="account" --stream.activity.filter.value="josiah" --alert.refresh.rateSeconds=1
+java -jar applications/alert-app/target/alert-app-0.0.1-SNAPSHOT.jar --spring.application.name=alert-app --spring.rabbitmq.host=localhost --spring.rabbitmq.username=guest --spring.rabbitmq.password=guest --spring.cloud.stream.bindings.input.destination="amq.topic" --stream.destination="alerts.alert" --stream.exchange.bind.key="#"   --stream.filter.sql="account = 'josiah' AND level IN ('critical', 'high','medium','low')" --server.port=8777 --stream.activity.filter.name="account" --stream.activity.filter.value="josiah" --alert.refresh.rateSeconds=1
 ```
 
 ```shell
@@ -302,7 +308,7 @@ Start Josiah Alert App (critical alerts ONLY)
 
 
 ```shell
-java -jar applications/alert-app/target/alert-app-0.0.1-SNAPSHOT.jar --spring.rabbitmq.host=localhost --spring.rabbitmq.username=guest --spring.rabbitmq.password=guest --spring.cloud.stream.bindings.input.destination="amq.topic" --stream.destination="alerts.alert" --stream.exchange.bind.key="#"   --stream.filter.sql="account = 'josiah' AND level IN ('critical')" --server.port=8778 --stream.activity.filter.name="account" --stream.activity.filter.value="josiah" --alert.refresh.rateSeconds=1
+java -jar applications/alert-app/target/alert-app-0.0.1-SNAPSHOT.jar --spring.application.name=alert-app --spring.rabbitmq.host=localhost --spring.rabbitmq.username=guest --spring.rabbitmq.password=guest --spring.cloud.stream.bindings.input.destination="amq.topic" --stream.destination="alerts.alert" --stream.exchange.bind.key="#"   --stream.filter.sql="account = 'josiah' AND level IN ('critical')" --server.port=8778 --stream.activity.filter.name="account" --stream.activity.filter.value="josiah" --alert.refresh.rateSeconds=1
 ```
 
 Open Web Application
