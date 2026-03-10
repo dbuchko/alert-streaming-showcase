@@ -25,7 +25,7 @@ class RabbitAmqpConsumerConfig {
     @Value("${spring.rabbitmq.host:localhost}")
     private String host;
 
-    @Value("${spring.rabbitmq.port:5552}")
+    @Value("${spring.rabbitmq.port:5672}")
     private int port;
 
     @Value("${spring.rabbitmq.username:guest}")
