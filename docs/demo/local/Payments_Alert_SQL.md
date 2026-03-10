@@ -1,19 +1,27 @@
 # Payments Alert SQL Demo
 
+## Deploy Locally
+
+### Initialize
+
 0. Disable WSS Agent!!!!
 
 
-Start Ollama
+    Start Ollama
 
-```shell
-ollama serve
-```
+    ```shell
+    ollama serve
+    ```
 
-Start podman
-```shell
-podman machine init
-podman machine start
-```
+    If this is a fresh install of podman:
+    ```shell
+    podman machine init
+    ```
+
+    Start podman
+    ```shell
+    podman machine start
+    ```
 
 1. Start Rabbit
 
@@ -21,9 +29,10 @@ podman machine start
 ./deployment/local/containers/rabbit.sh
 ```
 
-2. Start MQTT 5 Source
+2. Deploy MQTT Source
 
 ```shell
+cf push 
 java -jar applications/http-source/target/http-source-0.0.1-SNAPSHOT.jar \
   --server.port=8383 \
   --mqtt.connectionUrl=tcp://localhost:1883 \
@@ -54,7 +63,7 @@ open http://localhost:15672
 
 ----------------
 
-# Post Alerts
+### Post Alerts
 
 6. Post critical alert
 
@@ -195,7 +204,7 @@ Data as a service
 
 ------------------
 
-# Artificial Intelligence
+### Artificial Intelligence
 
 Start Ollama
 
@@ -329,3 +338,209 @@ java -jar applications/generator-supplier-source/target/generator-supplier-sourc
 
 
 Expected No new alerts or activities in running applications.
+
+
+
+## Deploy to Tanzu Platform
+
+### Initialize
+
+0. Disable WSS Agent!!!!
+
+0. After logging into the platform and targeting your org and space, create the `rmq-payments` RabbitMQ service instance.  (Alter the command to use the appropriate RabbitMQ Marketplace service and plan available in your platform.)
+
+    ```shell
+    cf create-service p.rabbitmq rmq-single-node  rmq-payments -c '{ "plugins": { "rabbitmq_mqtt": true,"rabbitmq_stream": true } }'
+
+    ```
+
+    Verify the service has started.
+    ```shell
+    cf service rmq-payments
+    ```
+
+    Create a [service key]{https://techdocs.broadcom.com/us/en/vmware-tanzu/platform/tanzu-rabbitmq-tanzu-platform/10-0/rabbitmq-tp/install-config.html#admin-service-key} to access the RMQ Administrator console
+    ```shell
+    cf create-service-key rmq-payments rmqadmin -c '{"tags": "administrator"}'
+    cf service-key rmq-payments rmqadmin
+    ```
+
+
+0.  Deploy the Alarm app for all alerts.
+
+    ```shell
+    cf push
+    ```
+
+0. Deploy MQTT Source
+
+    ```shell
+    cf push
+    ```
+
+```shell
+java -jar applications/http-source/target/http-source-0.0.1-SNAPSHOT.jar \
+  --server.port=8383 \
+  --mqtt.connectionUrl=tcp://localhost:1883 \
+  --spring.application.name=http-mqtt-source \
+  --mqtt.userName=guest \
+  --mqtt.userPassword=guest \
+  --spring.profiles.active=mqtt
+```
+
+4. Start app CRITICAL ONLY alerts
+
+```shell
+java -jar applications/alert-app/target/alert-app-0.0.1-SNAPSHOT.jar --spring.rabbitmq.host=localhost --spring.application.name="imani-critical" --spring.rabbitmq.username=guest --spring.rabbitmq.password=guest --spring.cloud.stream.bindings.input.destination="amq.topic" --stream.destination="alerts.alert" --stream.exchange.bind.key="#"   --stream.filter.sql="account = 'imani' AND level IN ('critical')" --server.port=8911 --stream.activity.filter.name="account" --stream.activity.filter.value="imani" --alert.refresh.rateSeconds=1
+```
+
+5. Open RabbitMQ Management Dashboard
+
+```shell
+open http://localhost:15672
+```
+
+
+----------------
+
+### Post Alerts
+
+6. Post critical alert
+
+```shell
+curl -X 'POST' \
+  'http://localhost:8383/publisher?topic=alerts.alert' \
+  -H 'accept: */*' \
+  -H 'Content-Type: application/json' \
+  -H "account: imani" \
+  -H "level: critical" \
+  -d '{"id" : "01", "account" : "imani", "level" : "critical", "time" : "5:00AM", "event" : "Multiple ATM pin numbers entries incorrect at location in Jersey City, New Jersey" }'
+```
+
+7. Post Alert
+
+```shell
+curl -X 'POST' \
+  'http://localhost:8383/publisher?topic=alerts' \
+  -H 'accept: */*' \
+  -H 'Content-Type: application/json' \
+  -H "account: imani" \
+  -H "level: high" \
+  -d '{"id" : "02", "account" : "imani", "level" : "high", "time" : "6:15AM", "event" : "Account balance just dropped below threshold!" }'
+  
+```
+
+
+7. Post Alert
+
+```shell
+curl -X 'POST' \
+  'http://localhost:8383/publisher?topic=alerts' \
+  -H 'accept: */*' \
+  -H 'Content-Type: application/json' \
+  -H "account: imani" \
+  -H "level: medium" \
+  -d '{"id" : "03", "account" : "imani", "level" : "medium", "time" : "7:00AM", "event" : "Account password has not been updated in a long time and is recommended to update as soon as possible!" }'
+  
+```
+
+
+6. Post Alert
+
+```shell
+curl -X 'POST' \
+  'http://localhost:8383/publisher?topic=alerts' \
+  -H 'accept: */*' \
+  -H 'Content-Type: application/json' \
+  -H "account: imani" \
+  -H "level: low" \
+  -d '{"id" : "04", "account" : "imani", "level" : "low", "time" : "7:00AM", "event" : "Friendly reminder to contribute to your Roth IRA" }'
+```
+
+
+
+8. Open Imani for All alerts
+
+```shell
+open http:///localhost:8383
+```
+
+
+9. Only Critical
+
+```shell
+open http:///localhost:8911
+```
+
+
+-----------------------------
+
+
+11. Start AMQP 1.0 Source
+
+```shell
+java -jar applications/http-source/target/http-source-0.0.1-SNAPSHOT.jar \
+  -spring.rabbitmq.host=localhost \
+  --spring.application.name=activities-source \
+  --spring.rabbitmq.username=guest \
+  --spring.rabbitmq.password=guest --spring.profiles.active="amqp1.0" --source.amqp.filter.property.name="account" --server.port=8555 --spring.cloud.stream.bindings.output.destination="activities.activity"
+```
+
+
+11. Publish Activity
+
+```shell
+curl -X 'POST' \
+  'http://localhost:8555/publisher?topic=imani' \
+  -H 'accept: */*' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "id" :  "1", 
+  "account" : "imani",
+  "icon" : "fa-credit-card",
+  "time" : "06:30 PM", 
+  "activity" : "Opened new credit card account"
+}'
+curl -X 'POST' \
+  'http://localhost:8555/publisher?topic=imani' \
+  -H 'accept: */*' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "id" :  "2", 
+  "account" : "imani",
+  "icon" : "fa-file-invoice",
+  "time" : "06:31 PM", 
+  "activity" : "Account statements shipped to home address"
+}'
+
+curl -X 'POST' \
+  'http://localhost:8555/publisher?topic=imani' \
+  -H 'accept: */*' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "id" :  "3", 
+  "account" : "imani",
+  "icon" : "fa-hand-holding-dollar",
+  "time" : "06:33 PM", 
+  "activity" : "Wire transfer of amount above threshold"
+}'
+curl -X 'POST' \
+  'http://localhost:8555/publisher?topic=imani' \
+  -H 'accept: */*' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "id" :  "4", 
+  "account" : "imani",
+  "icon" : "fa-wallet",
+  "time" : "06:31 PM", 
+  "activity" : "Visa credit card download to digital wallet"
+}'
+```
+
+
+11. Restart Apps for Data as Service
+
+Data as a service
+
+------------------
+

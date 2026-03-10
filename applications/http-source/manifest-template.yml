@@ -1,0 +1,31 @@
+---
+version: 1
+applications:
+- name: http-source
+  memory: 1G
+  instances: 1
+  # Path to your compiled JAR file
+  path: ./target/http-source-0.0.1-SNAPSHOT.jar
+
+  routes:
+    - route: db-http-source.apps.dhaka.cf-app.com
+  
+  # The Java Buildpack is usually detected automatically, 
+  # but you can specify it explicitly.
+  buildpacks:
+    - java_buildpack_offline
+    
+  env:
+    # Optional: Tells Spring which profile to use
+    SPRING_PROFILES_ACTIVE: cloud, mqtt
+    # Optional: Increases logging detail for debugging connections
+    # JBP_CONFIG_LOGGING_LEVEL: '{ "com.rabbitmq": "DEBUG" }'
+    # SPRING_APPLICATION_NAME: http-source
+    MQTT_CONNECTIONURL: tcp://<hostname>:<port>
+    MQTT_USERNAME: <username>
+    MQTT_USERPASSWORD: <password>
+
+  services:
+    # This must match the name of the service instance 
+    # you created via 'cf create-service'
+    - rmq-payments

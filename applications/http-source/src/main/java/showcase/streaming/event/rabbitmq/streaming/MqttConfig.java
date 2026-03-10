@@ -47,6 +47,7 @@ public class MqttConfig
 
     IMqttClient mqttClient() throws MqttException
     {
+        log.info("*** connectionUrl={}, userName={}, userPassword={}  ***", connectionUrl, userName, userPassword);
         var mqttClient = new MqttClient(connectionUrl, clientId, new MemoryPersistence());
 
         // 2. Set Connection Options
@@ -54,6 +55,8 @@ public class MqttConfig
         options.setCleanStart(true); // Setting clean start to true (clean session in MQTT v3)
         options.setConnectionTimeout(timeout);
         options.setAutomaticReconnect(true);
+        options.setUserName(userName);
+        options.setPassword(userPassword.getBytes(StandardCharsets.UTF_8));
 
         // 3. Connect to the Broker3
         log.info("Attempting to connect to broker: {}", connectionUrl);

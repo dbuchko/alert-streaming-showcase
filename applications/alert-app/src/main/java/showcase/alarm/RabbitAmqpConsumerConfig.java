@@ -2,9 +2,12 @@ package showcase.alarm;
 
 import com.rabbitmq.client.amqp.*;
 import com.rabbitmq.client.amqp.impl.AmqpEnvironmentBuilder;
+import com.rabbitmq.client.impl.AMQConnection;
+
 import lombok.extern.slf4j.Slf4j;
 import nyla.solutions.core.patterns.conversion.Converter;
 import nyla.solutions.core.util.Debugger;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -16,11 +19,14 @@ import showcase.alarm.domains.Alert;
 @Slf4j
 class RabbitAmqpConsumerConfig {
 
-    @Value("${spring.application.name}")
+    @Value("${spring.application.name:alert-app}")
     private String applicationName;
 
     @Value("${spring.rabbitmq.host:localhost}")
     private String host;
+
+    @Value("${spring.rabbitmq.port:5672}")
+    private int port;
 
     @Value("${spring.rabbitmq.username:guest}")
     private String username;
@@ -48,7 +54,6 @@ class RabbitAmqpConsumerConfig {
     @Value("${stream.activity.filter.name:}")
     private String activityFilterPropertyName;
 
-
     @Value("${spring.cloud.stream.bindings.input.destination:amq.topic}")
     private String alertExchange;
 
@@ -70,9 +75,11 @@ class RabbitAmqpConsumerConfig {
     @Bean
     Environment amqpEnvironment()
     {
+        log.info("*** host={}, port={}, username={}, password={} ***", host, port, username, password);
         return new AmqpEnvironmentBuilder()
                 .connectionSettings()
                 .host(host)
+                .port(port)
                 .username(username)
                 .password(password)
                 .environmentBuilder()
@@ -82,7 +89,9 @@ class RabbitAmqpConsumerConfig {
     @Bean("alertConnection")
     Connection alertConnection(Environment environment)
     {
+        log.info("*** host={}, port={}, username={}, password={} ***", host, port, username, password);
         return environment.connectionBuilder().host(host)
+                .port(port)
                 .name(applicationName)
                 .username(username)
                 .password(password)
@@ -92,7 +101,9 @@ class RabbitAmqpConsumerConfig {
     @Bean("activityConnection")
     Connection activityConnection(Environment environment)
     {
+        log.info("*** host={}, port={}, username={}, password={} ***", host, port, username, password);
         return environment.connectionBuilder().host(host)
+                .port(port)
                 .name(applicationName)
                 .username(username)
                 .password(password)

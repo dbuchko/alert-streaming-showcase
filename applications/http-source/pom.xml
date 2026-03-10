@@ -18,6 +18,11 @@
         <spring-cloud.version>2025.0.0</spring-cloud.version>
     </properties>
     <dependencies>
+		<dependency>
+			<groupId>io.pivotal.cfenv</groupId>
+			<artifactId>java-cfenv-boot</artifactId>
+			<version>4.0.0</version>
+		</dependency>
         <dependency>
             <groupId>com.rabbitmq.client</groupId>
             <artifactId>amqp-client</artifactId>
