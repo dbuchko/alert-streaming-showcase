@@ -32,7 +32,6 @@
 2. Deploy MQTT Source
 
 ```shell
-cf push 
 java -jar applications/http-source/target/http-source-0.0.1-SNAPSHOT.jar \
   --server.port=8383 \
   --mqtt.connectionUrl=tcp://localhost:1883 \
